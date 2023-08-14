@@ -4,7 +4,24 @@
   "projectId": "f32d6f45-f84e-4faf-b2db-bc10c19f1219",
   "sendCrashReports": "true",
   "terraformProviders": [],
-  "terraformModules": [],
+  "terraformModules": [
+    {
+      "name": "security_group",
+      "source": "./modules/aws/security_group"
+    },
+    {
+      "name": "security_group_rule",
+      "source": "./modules/aws/security_group_rule"
+    },
+    {
+      "name": "network_security_group",
+      "source": "./modules/azure/network_security_group"
+    },
+    {
+      "name": "network_security_rule",
+      "source": "./modules/azure/network_security_rule"
+    }
+  ],
   "codeMakerOutput": "imports",
   "context": {
 
