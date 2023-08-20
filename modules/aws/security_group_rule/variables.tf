@@ -18,6 +18,11 @@ variable "protocol" {
   type        = string
 }
 
+variable "cidr_blocks" {
+  description = "CIDR blocks for security group rule"
+  type        = list(any)
+}
+
 variable "security_group_id" {
   description = "Security Group ID for security group rule"
   type        = string
