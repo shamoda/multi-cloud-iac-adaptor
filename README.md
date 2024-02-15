@@ -17,7 +17,7 @@
    1. `pip install -r requirements.txt `
 3. Setup env variables to virtual env
    1. `set FLASK_ENV=development`
-   2. `set FLASK_APP=src`
+   2. `set FLASK_APP=sever.py`
    3. `set PYTHONDONTWRITEBYTECODE=1`
 
 ### To run the application: `flask run`
