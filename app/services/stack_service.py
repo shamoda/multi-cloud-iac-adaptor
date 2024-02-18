@@ -77,3 +77,18 @@ class Stack_Service():
         except Exception as ex:
             current_app.logger.error(ex)
             return str(ex)
+        
+    def get_all_stacks(self):
+        try:
+            stacks = list(db.stacks.find())
+            stack_names = []
+            distinct_stacks = []
+            for stack in stacks:
+                if stack['stack_name'] in stack_names:
+                    continue
+                distinct_stacks.append(json.loads(json_util.dumps(self.get_latest_version(stack['stack_name']))))
+                stack_names.append(stack['stack_name'])
+            return distinct_stacks
+        except Exception as ex:
+            current_app.logger.error(ex)
+            return str(ex)

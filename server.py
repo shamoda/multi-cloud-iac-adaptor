@@ -61,5 +61,10 @@ def get_stack_by_id(stack_id):
     return stack_service.Stack_Service().get_stacks_by_id(stack_id)
 
 
+@app.route('/stacks', methods=['GET'])
+def get_all_stacks():
+    return stack_service.Stack_Service().get_all_stacks()
+
+
 if (__name__ == '__main__'):
     app.run()
