@@ -1,5 +1,6 @@
 import logging
 from flask import Flask, request, current_app
+from flask_cors import CORS
 from cdktf import App
 from main import MyStack
 from app.utils import execution_util
@@ -7,6 +8,8 @@ from app.utils import file_system_util
 from app.services import stack_service
 
 app = Flask(__name__)
+# allowing all cross-origins
+CORS(app)
 # logging config
 logging.basicConfig(filename='app.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
