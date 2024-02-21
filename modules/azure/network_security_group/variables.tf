@@ -12,3 +12,9 @@ variable "resource_group_name" {
   description = "Resource Group Name for network security group"
   type        = string
 }
+
+variable "tags" {
+  description = "Resouce tags"
+  type        = map
+  default     = {}
+}

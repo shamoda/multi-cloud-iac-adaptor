@@ -11,4 +11,5 @@ class Azure_Network_Security_Group_Processor():
         name = module_json.get('name')
         location = module_json.get('location')
         resourceGroupName = module_json.get('resourceGroupName')
-        return network_security_group.NetworkSecurityGroup(scope, tfId, name=name, location=location, resource_group_name=resourceGroupName);
+        tags = module_json.get('tags')
+        return network_security_group.NetworkSecurityGroup(scope, tfId, name=name, location=location, resource_group_name=resourceGroupName, tags=tags);
