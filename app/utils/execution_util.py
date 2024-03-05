@@ -18,3 +18,11 @@ class Execution_Util():
         processed_log = ansi_escape.sub('', log)
         current_app.logger.info(processed_log)
         return processed_log
+    
+
+    def command_executor_with_output_file(self, stack_name : str, command_args : []):
+        EXECUTION_DIR = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', '..', 'cdktf.out', 'stacks', stack_name))
+
+        with open(EXECUTION_DIR+"/plan.json", "w") as output_file:
+            subprocess.run(command_args, stdout=output_file, check=True, cwd=EXECUTION_DIR, universal_newlines=True)
+            
