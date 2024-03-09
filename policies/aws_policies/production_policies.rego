@@ -40,7 +40,7 @@ deny[msg] {
 
 # =================================== checking tag values ===================================
 checkRequiredTagValueExists(tag_key) {
-    resource_changes[resource_index].change.actions[_] == "create"
+    # resource_changes[resource_index].change.actions[_] == "create"
     tag_value := resource_changes[resource_index].change.after.tags[tag_key]
     validTagValues[_] == tag_value
 }
@@ -55,7 +55,7 @@ deny[msg] {
 
 # =================================== in prod only 443 should be allowed ===================================
 checkRequiredTagAndValueExists(tag_key,tag_value) {
-    resource_changes[resource_index].change.actions[_] == "create"
+    # resource_changes[resource_index].change.actions[_] == "create"
     value := resource_changes[resource_index].change.after.tags[tag_key]
     value == tag_value
 }
