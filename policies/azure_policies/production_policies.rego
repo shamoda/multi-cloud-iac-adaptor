@@ -9,6 +9,8 @@ required_tags := {"environment","technical_owner"}
 validTagValues = {"prod", "nonprod"}
 environment_key = "environment"
 max_deletions := 0
+whitelist_cidr_blocks := ["10.0.0.0/24", "192.0.0.0/24"]
+prod_allowed_ports := ["22","443"]
 
 # =================================== Warn about all deletes ===================================
 resources_removed := plan_functions.get_resources_by_action("delete", resource_changes)
@@ -65,15 +67,16 @@ sg_rules := plan_functions.get_resources_by_type("azurerm_network_security_rule"
 checkPortAllowed(resource_checks, port) = port_violations{
     port_violations := [ resource | 
       resource := resource_checks[_]
-      resource.change.after.destination_port_range != port
+      resource.change.after.destination_port_range != port[0]
+      resource.change.after.destination_port_range != port[1]
     ]
 }
 
 deny[msg] {
     checkRequiredTagAndValueExists(environment_key,"prod")
-    resources := checkPortAllowed(sg_rules, "443")
+    resources := checkPortAllowed(sg_rules, prod_allowed_ports)
     resources != []
-    msg := sprintf("Destination port must be 443 in prod environments",[])
+    msg := sprintf("Destination port must be one of the following in prod environments: %v",[prod_allowed_ports])
 }
 
 
@@ -87,6 +90,14 @@ checkPortDenied(resource_checks, port) = port_violations{
 
 deny[msg] {
     resources := checkPortDenied(sg_rules, "22")
+
+    port_whitelisted := [ resource | 
+      resource := resources[_]
+      whitelist_cidr_blocks[_] == resource.change.after.source_address_prefix
+    ]
+
     resources != []
-    msg := sprintf("SSH port 22 is not allowed",[])
+    port_whitelisted == []
+
+    msg := sprintf("SSH port 22 is is only allowed for whitelisted IPs %v",[whitelist_cidr_blocks])
 }
