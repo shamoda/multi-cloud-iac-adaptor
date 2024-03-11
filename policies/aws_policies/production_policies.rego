@@ -9,7 +9,6 @@ required_tags := {"environment","technical_owner"}
 validTagValues = {"prod", "nonprod"}
 environment_key = "environment"
 max_deletions := 0
-whitelist_cidr_blocks := ["10.0.0.0/24", "192.0.0.0/24"]
 prod_allowed_ports := [22,443]
 
 # =================================== Warn about all deletes ===================================
@@ -94,11 +93,11 @@ deny[msg] {
     port_whitelisted := [ resource | 
       resource := resources[_]
       some i
-      resource.change.after.cidr_blocks[i] == whitelist_cidr_blocks[_]
+      resource.change.after.cidr_blocks[i] == "0.0.0.0/0"
     ]
 
     resources != []
-    port_whitelisted == []
+    port_whitelisted != []
 
-    msg := sprintf("SSH port 22 is is only allowed for whitelisted IPs %v",[whitelist_cidr_blocks])
+    msg := sprintf("Global SSH via port 22 is not allowed",[])
 }

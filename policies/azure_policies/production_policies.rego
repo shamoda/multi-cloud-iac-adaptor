@@ -93,11 +93,11 @@ deny[msg] {
 
     port_whitelisted := [ resource | 
       resource := resources[_]
-      whitelist_cidr_blocks[_] == resource.change.after.source_address_prefix
+      resource.change.after.source_address_prefix == "0.0.0.0/0"
     ]
 
     resources != []
-    port_whitelisted == []
+    port_whitelisted != []
 
-    msg := sprintf("SSH port 22 is is only allowed for whitelisted IPs %v",[whitelist_cidr_blocks])
+    msg := sprintf("Global SSH via port 22 is not allowed",[])
 }
