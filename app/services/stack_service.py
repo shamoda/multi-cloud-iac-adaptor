@@ -2,6 +2,7 @@ from flask import request, current_app, jsonify
 from app.utils.db_util import db
 from bson import json_util, ObjectId
 import json
+from app.utils import crypto_util
 
 class Stack_Service():
     def __init__(self):
@@ -13,7 +14,7 @@ class Stack_Service():
                 'stack_name': request.get_json().get('stackName'),
                 'version': version,
                 'status': 'applied',
-                'config': request.get_json()
+                'config': crypto_util.Crypto_Util().encrypt_message(str(request.get_json()).replace("\'", "\""))
             }
 
             db_response = db.stacks.insert_one(data)
@@ -28,7 +29,7 @@ class Stack_Service():
             latest_stack = self.get_latest_version(request.get_json().get('stackName'))
             if latest_stack == None:
                 return False
-            elif latest_stack['config'] == request.get_json():
+            elif crypto_util.Crypto_Util().decrypt_message(latest_stack['config']) == str(request.get_json()):
                 return True
 
         except Exception as ex:
@@ -64,7 +65,10 @@ class Stack_Service():
     def get_stacks_by_name(self, stack_name: str):
         try:
             stacks = list(db.stacks.find({"stack_name": stack_name}))
-            return json.loads(json_util.dumps(stacks))
+            decrypted_stacks = []
+            for stack in stacks:
+                decrypted_stacks.append(self.decrypted_stack(stack))
+            return json.loads(json_util.dumps(decrypted_stacks))
         except Exception as ex:
             current_app.logger.error(ex)
             return str(ex)
@@ -73,7 +77,7 @@ class Stack_Service():
     def get_stacks_by_id(self, stack_id: str):
         try:
             stack = db.stacks.find_one({"_id": ObjectId(stack_id)})
-            return json.loads(json_util.dumps(stack))
+            return json.loads(json_util.dumps(self.decrypted_stack(stack)))
         except Exception as ex:
             current_app.logger.error(ex)
             return str(ex)
@@ -86,9 +90,20 @@ class Stack_Service():
             for stack in stacks:
                 if stack['stack_name'] in stack_names:
                     continue
-                distinct_stacks.append(json.loads(json_util.dumps(self.get_latest_version(stack['stack_name']))))
+                distinct_stacks.append(json.loads(json_util.dumps(self.decrypted_stack(self.get_latest_version(stack['stack_name'])))))
                 stack_names.append(stack['stack_name'])
             return distinct_stacks
         except Exception as ex:
             current_app.logger.error(ex)
             return str(ex)
+        
+        
+    def decrypted_stack(self, encrypted_stack):
+        data = {
+                    '_id': encrypted_stack['_id'],
+                    'stack_name': encrypted_stack['stack_name'],
+                    'version': encrypted_stack['version'],
+                    'status': encrypted_stack['status'],
+                    'config': json.loads(crypto_util.Crypto_Util().decrypt_message(encrypted_stack['config']))
+                }
+        return json.loads(json_util.dumps(data))
