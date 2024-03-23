@@ -77,16 +77,21 @@ def validate():
 
     MyStack(app, stack_name, request)
     app.synth()
+    output_log = ''
 
-    execution_util.Execution_Util().command_executor(stack_name, ["terraform", "init"])
-    execution_util.Execution_Util().command_executor(stack_name, ["terraform", "plan", "-out=plan.tfplan"])
+    output_log += execution_util.Execution_Util().command_executor(stack_name, ["terraform", "init"])
+    output_log += execution_util.Execution_Util().command_executor(stack_name, ["terraform", "plan", "-out=plan.tfplan"])
     execution_util.Execution_Util().command_executor_with_output_file(stack_name, ["terraform", "show", "-json", "plan.tfplan"])
     if request.get_json().get('provider').get('type') == 'aws':
         warns = execution_util.Execution_Util().command_executor(stack_name, ["opa", "exec", "--bundle", "../../../policies/aws_policies", "--decision", "production/warn", "plan.json"])
         denys = execution_util.Execution_Util().command_executor(stack_name, ["opa", "exec", "--bundle", "../../../policies/aws_policies", "--decision", "production/deny", "plan.json"])
+        output_log += warns
+        output_log += denys
     else:
         warns = execution_util.Execution_Util().command_executor(stack_name, ["opa", "exec", "--bundle", "../../../policies/azure_policies", "--decision", "production/warn", "plan.json"])
         denys = execution_util.Execution_Util().command_executor(stack_name, ["opa", "exec", "--bundle", "../../../policies/azure_policies", "--decision", "production/deny", "plan.json"])
+        output_log += warns
+        output_log += denys
     
     allow = 0
     if len(json.loads(denys)['result'][0]['result']) == 0:
@@ -95,7 +100,8 @@ def validate():
     data = {
         "allow": allow,
         "warnings": json.loads(warns)['result'][0]['result'],
-        "violations": json.loads(denys)['result'][0]['result']
+        "violations": json.loads(denys)['result'][0]['result'],
+        "log": output_log
     }
 
     current_app.logger.info(stack_name+' validated with results: ' + str(data))
